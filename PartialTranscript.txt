@@ -1,0 +1,18 @@
+LET
+
+in clojure you can do this
+you see I've got a function defined there, called f
+f takes no arguments and then it uses this let thing
+and if you look at the let you'll get the idea...
+the let says a can be 1
+and b can be a plus 1
+and c can be a plus b
+so these are kind of like local variables inside the function
+and then I've returned a plus b plus c
+that's how you do that in clojure.
+What is that let? In any other language that would be part of the language,
+a keyword but that is not a keyword, that keyword does not exist in the language,
+thats a function. How do you write a function like that, how do you write anything
+without local variables? What if you can't declare local variables? 
+26:31
+
