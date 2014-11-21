@@ -14,5 +14,75 @@ What is that let? In any other language that would be part of the language,
 a keyword but that is not a keyword, that keyword does not exist in the language,
 thats a function. How do you write a function like that, how do you write anything
 without local variables? What if you can't declare local variables? 
-26:31
+
+Like this:
+this gets interesting, see all those paranthesis? They all have meanings.
+I've defined a function named ff takes no arguments first call a function which takes an argument a
+the argument that gets passed in is 1 into a varibale named 'a'. This function calls the next function
+which has an argument 'a+1' which goes into an argument named b. Now 'a' is still in scope. I can do
+the same with the next function which takes as its argument 'a+b' now we have all the varibales defined
+the function multiplies 'a*b*c' and returns the result. If I had no way to define local variables, I
+could define them this way. But it is annoying, I don't want to do that so I cam improve on that. One
+of the things I don't like about this is that the arguments are all backwards, they are all at the end of
+everything. I'd like to get all the arguments back up to the front so let me do this. I'm going to 
+define my self a little function called 'lt', and this function is going to take two arguments; a value and
+another function. The 'lt' function calls the function (the 2nd argument) and passes in the variable (the
+1st argument). Now I'm going to define 'fff' which takes no arguments and I'm going to say 'lt 1', and
+I'm going to pass in a function which has an argument named 'a' so 1 goes into 'a'. Now how does that 1 go into
+'a'? Because this function is being passed into lt which will call it. So lt gets the function (defined as its
+2nd argument) which takes 'a', so 'a' gets defined. And what does this function do? Well it has got another
+'lt' which passes in a '+ 1 a' which gets into 'b' and that will call another function with a 'lt' which
+does a '+ a b' which gets passed into 'c' which then calls '* a b c'. So I can get the order right just
+by having this little function 'lt'. Now hard would it be to write a little bit of code which took the code
+in 'ff' and turned into the code in 'fff'? Same data, same order so all we have to do is put a few extra parenthesisin. But I can do this! I can write a little thing which will translate the code in 'ff' into the code ion 'fff'.
+And I could get all my local variables defined with this nice syntax. That is called a monad. A monad is the
+thing that does this. The monad I'm going to talk about here is the 'let monad'. We're going to create it
+using a macro called 'defmonad'. The name of the monad is going to be 'let-m'. We're going to pass in a function
+called 'bind' which is just the 'lt' function. It is called 'bind' because the function binds a name (variable) to a
+value. There is another function called result, we don't need to worry about that at the moment. I've set it to 'identity' which just returns its argument (pass through).  Now I define a function which calls domonad which passes
+in 'a', 'b' and 'c' and their respective functions to 'let-m' That little monad will take that apart and restucture it to look like the code in 'fff' with my bind function instead of 'lt'. 
+
+Why would we want to do anything like this? Wiring up functions in stupid ways? Well, let me tell you about the
+'maybe' monad. We have a functiob called fragile which takes three arguments and adds them together. You can
+see whay it is called fragile; what would happen if we pass in 'nil'? We get a NullPointerException. We could surround
+the code with a try/catch block to catch the null pointer exception and print a message. But I don't want
+that. I don't want this function to be exposed to 'nil'. I suppose I could surround it with some function having
+a bunch of if statements checking all the arguments to make sure there aren't any nils, but there's another
+way. What if a bind function checks if the argument is nil, but don't call any further? If the bind
+function detects a nil, we'll just stop cold. This is the bind defined in 'no-nil-m'. If the value coming
+in is nil, then return nil. otherwise call the function with the value. So you can see if we look at the 'lt'
+function again, if that had a nil check, and the argument value passed in was nil then the function would not
+be called and the entire downstream would not be called. It would just return nil. So now I can create a new
+function called 'safe-fragile' which takes 'a', 'b' and 'c' and it does the no-nil monad, taking a and putting it
+into safe-a, b into safe-b and c into safe-c, then calling fragile. if any of 'a', 'b' or 'c' are nil, it will abort
+and return nil. If you try it with a nil argument you will see that there is no exception. It never got to the call which would throw the exception. But you might say, 'if I've got to write all the 'safe-a', etc code, I might as well
+write all the if statements'. Well there's something else you can do. You can 'lift'. Lifting is when you say I've got a function which takes a certian number of arguments, in this case 3. But I want those arguments to be filtered
+through the monad so i want to 'lift' this function into the no-nil monad so that all the arguments are now protected so I say 'with-monad no-nil-m' lift fragile with 3 arguments and put that into a new function (lifted-safe-fragile).
+So it creates a whole new function that is essentially 'safe-fragile'. Again when you run it there will be no exceptions if you pass in a nil. So with this simple statement we have taken a low-level function and lifted it up and 
+created a new higher-level function that has protections around it.
+
+We're going to take advantage of this idea of lifting and say that functions can take low-level arguments and a monad will raise those arguments to a higher level. In the case of the maybe (no-nil) monad the lower level is 'possibly nil' the high level is 'no possibility of nil'. Another example of lift.....
+
+Let's say at the lowlevel I have functions which take numbers. But there's a different way to represent a number, I could represent a number in a 'higher level'. The number one could be represented by a single dot ("."). The number
+2 by two dots (".."). So can I take any function that takes numbers and lift it so that it takes 'dot notation' 
+and returns values, without modifying the functions at all? Here's my dot monad. The bind function is very
+simple; the incoming value is 'mv' which is a bunch of dots. We will call the passed in function after having converted the value to the lower level using 'count' (counting the dots). And this is where we see the need for the result in a monad. It is the function which translates in the opposite direction. The result says give me a number and I'm going to turn that into a bunch of dots. So now I can create a function called 'add-dots' and I'm going to say
+'with the dot monad lift plus which takes 2 as an argument. '+' is not an operator, in clojure it is a function. So I'm going to lift the add function into add-dots and lift the '*' function (multiply) into mul-dots and lift
+munus (-) into subtract-dots and I can do something a little more complicated and define dcd (lifted-dcd in the code) which stands for decades and lift this function which takes 2 arguments, tens and units, multiplies the tens by 10 and adds the units. So lifted-dcd "..." "....." should return 35 dots. The monad is doing both the translation in and back out.
+
+So far all of our bind functions have simply called the incoming function. What happens if you call the incoming
+function more than once? That would be another kind of monad, the 'list monad' (list-m). The upper form is a list,
+the lower form is an element (number). So I've got a function which adds to numbers. Can I lift it so that it adds two lists? And what does it mean to add two lists? Adding list [1,2] to list [3,4], what does it mean? I'm going to
+define it this way, the result is [4,5,5,6]. So in the bind function I'm going to map that function over my list. So it will call the function f over all the values in the list and return a list of lists as a result. The result function takes the result of something like (+ x y) and turn it into a list. Applying concat in the bind will flatten the list of lists. The list comprehension is used for list comprehensions, so the 'for' 'keyword' isn't actually a keyword at all it is a function constrcuted out of monads. Can also make a mult-list in the same way.
+
+Dungeons and Dragons
+There is a monad called the distribution monad. It translates from a simple sample, that's the low-level form into
+a probability distribtion. How do you translate from a sample to a distribution? If you wanted to know the probability distribution of a die, how do you translate samples into the distribution? You roll the die and count all the rolls, measure the number of the results and plot them out as a histogram. That's exactly what we are going to create. We are going to take something that scores a sample and run it through a histogram creator. To do this we start with the uniform function which creates a uniform distribution between 1 and n, so in die-n, n is specified and the uniform distribution between 1 and n is returned. Now I can define a number of dice. A 4 sided die is 'die-n 4', etc.
+ So d4 looks like: '{4 1/4, 3 1/4, 2 1/4, 1 1/4}' etc. So what if I want to know the distribution of 2 dice is?
+ So I create d2d  with a die coming in. Using the distribution monad I will take the incoming die and I will add the two samples together and it will then turn that back into a distribution. I have created a bunch of these, d2d4, d2d6, etc. The d2d4 looks like: '{2 1/16, 3 1/8, 4 3/16, 8 1/16, 7 1/8, 6 3/16, 5 1/4}'. 
+So now we can play a game. here's our scenario, which is a player walking through a map. The player firsts encounters a door where he must dispell magic. If he does, there are 2 monsters behind the door and he has to attack and kill both monsters. If he succeedsm, then there is a sorceress behind the monsters which he must please somehow. if he pleases the sorceress he will find a treasure chest. If he opens the chest he must avoid a trap. If he does this he gets the treasure otherwise he gets poisoned. Scenario first takes all the required die-rolls, e.g to dispell-magic, attack monster, etc. These are samples, e.g. 1,5,6,12,3. Then I would run the algorithm to see which of these outcomes took place. We have to roll a d4 and score a 4 to dispell the magic to kill beast one we have to score 15 or better on a d20, and the same for beast two. Otherwise we are going to get eaten. To please the sorceress we have to roll a 20 or better on a 2d12, otherwise we are going to be frozen by the sorceress. We need 10 or better to miss the trap otherwise we get poisoned. Now i am going to plug in the distributions to the distribution monad. When we run that we see that we have a 3/4 chance of being dazed-and-confused: '{:dazed-and-confused 3/4, :eaten 91/400, :frozen 129/6400, :win 21/20480, :poisoned 27/20480}'. That is cool. I didn't ave to do the maths myself, it was all done by the monad and translations from samples to distrubutions and back out through a number of iterations. You will see it akes it a while.
+
+One last monad. Can you write programs that don't assign variables? The answer is yes. I am  going to write a program which assigns variables in a language which doesn't assign variables, i.e. without mutating any state. We do that with yet another monad called the state monad.
+56:51
+
 
