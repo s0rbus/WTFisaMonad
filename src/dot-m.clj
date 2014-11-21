@@ -39,6 +39,8 @@
   (with-monad dot-m
     (m-lift 2 -)))
 
+(def lifted-dcd (with-monad dot-m (m-lift 2 (fn [t u] (+ u (* t 10))))))
+
 (printf "5-2 is 3 %s\n" (subtract-dots "....." ".."))
 
 (defn mean-4 [a b c d] (/ (+ a b c d) 4))
