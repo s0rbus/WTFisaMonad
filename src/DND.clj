@@ -1,8 +1,37 @@
 (use 'clojure.algo.monads)
-(use 'clojure.contrib.probabilities.finite-distributions)
 
 ;upper form: Probability Distribution
 ;lower form: a single sample
+
+;contrib-probabilities is no longer available after re-org and old contrib
+;library failed to compile so just added required monad and uniform function
+;here
+
+; The probability distribution monad. It is limited to finite probability
+; distributions (e.g. there is a finite number of possible value), which
+; are represented as maps from values to probabilities.
+
+(defmonad dist-m
+  "Monad describing computations on fuzzy quantities, represented by a finite
+   probability distribution for the possible values. A distribution is
+   represented by a map from values to probabilities."
+  [m-result (fn m-result-dist [v]
+         {v 1})
+   m-bind   (fn m-bind-dist [mv f]
+         (letfn [(add-prob [dist [x p]]
+               (assoc dist x (+ (get dist x 0) p)))]
+           (reduce add-prob {}
+              (for [[x p] mv  [y q] (f x)]
+           [y (* q p)]))))
+   ])
+
+(defn uniform
+  "Return a distribution in which each of the elements of coll
+   has the same probability."
+  [coll]
+  (let [n (count coll)
+   p (/ 1 n)]
+    (into {} (for [x (seq coll)] [x p]))))
 
 (defn die-n [n] (uniform (range 1 (inc n))))
 
