@@ -1,4 +1,4 @@
-(use 'clojure.contrib.monads)
+(use 'clojure.algo.monads)
 
 (defmonad list-m
   [m-result (fn [v] (list v))

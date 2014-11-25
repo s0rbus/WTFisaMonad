@@ -1,4 +1,4 @@
-(use 'clojure.contrib.monads)
+(use 'clojure.algo.monads)
 
 (defstruct complex :r :i)
 

@@ -1,4 +1,4 @@
-(use 'clojure.contrib.monads)
+(use 'clojure.algo.monads)
 (use 'clojure.contrib.probabilities.finite-distributions)
 
 (defn die-n [n] (uniform (range 1 (inc n))))

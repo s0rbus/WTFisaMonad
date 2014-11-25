@@ -1,4 +1,4 @@
-(use 'clojure.contrib.monads)
+(use 'clojure.algo.monads)
 
 (defmonad dot-m
   [m-result (fn [n] (apply str (repeat n ".")))
