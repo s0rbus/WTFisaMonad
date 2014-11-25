@@ -29,4 +29,6 @@
          ]
     nil))
 
+(def end-state
+  ((run-program) {}))
 

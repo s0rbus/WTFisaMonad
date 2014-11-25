@@ -1,6 +1,9 @@
 (use 'clojure.algo.monads)
 (use 'clojure.contrib.probabilities.finite-distributions)
 
+;upper form: Probability Distribution
+;lower form: a single sample
+
 (defn die-n [n] (uniform (range 1 (inc n))))
 
 (def d4 (die-n 4))
@@ -50,3 +53,4 @@
       kill-beast-2 
       please-sorceress
       miss-trap)))
+

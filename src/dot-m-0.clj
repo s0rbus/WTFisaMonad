@@ -8,27 +8,18 @@
   [m-result (fn [n] (apply str (repeat n ".")))
    m-bind (fn [mv f] (f (count mv)))])
 
-(defn add-dots [da db]
-  (domonad dot-m
-    [x da
-     y db]
-    (+ x y)))
+(def add-dots (with-monad dot-m (m-lift 2 +)))
+(def mul-dots (with-monad dot-m (m-lift 2 *)))
+(def subtract-dots (with-monad dot-m (m-lift 2 -)))
 
-(defn mul-dots [da db]
-  (domonad dot-m
-    [x da
-     y db]
-    (* x y)))
+(def dcd (with-monad dot-m (m-lift 2 (fn [t u] (+ u (* t 10))))))
 
-(defn dcd [dt du]
-  (domonad dot-m
-    [tens dt
-     units du]
-    (+ (* 10 tens) units)))
-
-(println (add-dots ".." "...."))
-(println (mul-dots "..." "...."))
-(println (dcd "..." "....."))
+(println "           5    10   15   20   25   30   35")
+(println "       ....:....:....:....:....:....:....:")
+(println "2+4+=6 " (add-dots ".." "...."))
+(println "3*4=12 " (mul-dots "..." "...."))
+(println "5-2=3  " (subtract-dots "....." ".."))
+(println "35     " (dcd "..." "....."))
 
 
 (printf "should be five dots %s\n"
